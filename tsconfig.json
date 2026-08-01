@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@healthsense/*": ["packages/*/src"]
+    }
+  },
+  "include": ["packages/*/src/**/*", "apps/*/src/**/*", "scripts/**/*"]
+}

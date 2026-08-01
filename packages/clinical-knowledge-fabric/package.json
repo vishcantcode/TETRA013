@@ -1,0 +1,19 @@
+{
+  "name": "@healthsense/clinical-knowledge-fabric",
+  "version": "1.0.0",
+  "description": "Canonical Clinical Knowledge Fabric for HealthSense",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "crypto": "*",
+    "@healthsense/db": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^0.34.0"
+  }
+}

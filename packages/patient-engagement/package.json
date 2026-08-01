@@ -1,0 +1,21 @@
+{
+  "name": "@healthsense/patient-engagement",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@healthsense/clinical-explainability": "workspace:^",
+    "@healthsense/clinical-intelligence": "workspace:^",
+    "@healthsense/clinical-models": "workspace:^",
+    "@healthsense/clinical-referrals": "workspace:^",
+    "@healthsense/types": "workspace:^",
+    "@healthsense/utils": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

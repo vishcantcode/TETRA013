@@ -1,0 +1,42 @@
+{
+    "main": "src/index.ts",
+    "types": "src/index.ts",
+    "name": "@healthsense/api",
+    "version": "1.0.0",
+    "scripts": {
+        "test": "vitest run",
+        "build": "tsc",
+        "start": "node dist/server.js",
+        "dev": "npx tsx watch src/server.ts",
+        "lint": "eslint src/"
+    },
+    "dependencies": {
+        "@healthsense/chronic-disease": "workspace:^",
+        "@healthsense/clinical-models": "workspace:^",
+        "@healthsense/medication-intelligence": "workspace:^",
+        "@healthsense/patient-digital-twin": "workspace:^",
+        "@healthsense/preventive-intelligence": "workspace:^",
+        "@healthsense/workflow-runtime": "workspace:^",
+        "@healthsense/auth": "workspace:^",
+        "@healthsense/db": "workspace:^",
+        "@healthsense/hiek": "workspace:^",
+        "@healthsense/air": "workspace:^",
+        "@healthsense/huse": "workspace:^",
+        "@healthsense/hpie": "workspace:^",
+        "@healthsense/hoip": "workspace:^",
+        "@healthsense/hcop": "workspace:^",
+        "@healthsense/hcip": "workspace:^",
+        "@healthsense/hckep": "workspace:^",
+        "@healthsense/clinical-decision-platform": "workspace:^",
+        "@healthsense/longitudinal-intelligence": "workspace:^",
+        "@healthsense/confidence": "workspace:^",
+        "@healthsense/explainability": "workspace:^",
+        "cors": "^2.8.6",
+        "express": "^5.2.1"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.6",
+        "tsx": "^4.7.0"
+    }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@healthsense/chronic-disease",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@healthsense/workflow-runtime": "workspace:*",
+    "@healthsense/patient-digital-twin": "workspace:*",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

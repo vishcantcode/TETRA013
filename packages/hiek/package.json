@@ -1,0 +1,16 @@
+{
+  "name": "@healthsense/hiek",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@healthsense/db": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

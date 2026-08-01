@@ -1,0 +1,15 @@
+{
+    "main": "src/index.ts",
+    "types": "src/index.ts",
+    "name": "@healthsense/auth",
+    "version": "1.0.0",
+    "scripts": {
+        "test": "vitest run",
+        "build": "tsc",
+        "lint": "eslint src/"
+    },
+    "dependencies": {
+        "@types/jsonwebtoken": "^9.0.10",
+        "jsonwebtoken": "^9.0.3"
+    }
+}

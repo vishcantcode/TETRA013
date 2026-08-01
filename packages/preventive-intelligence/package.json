@@ -1,0 +1,17 @@
+{
+  "name": "@healthsense/preventive-intelligence",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@healthsense/patient-digital-twin": "workspace:*",
+    "@healthsense/workflow-runtime": "workspace:*",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

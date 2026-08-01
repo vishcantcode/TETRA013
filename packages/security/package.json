@@ -1,0 +1,11 @@
+{
+    "main":  "src/index.ts",
+    "types":  "src/index.ts",
+    "name":  "@healthsense/security",
+    "version":  "1.0.0",
+    "scripts":  {
+                    "test":  "vitest run",
+                    "build":  "tsc",
+                    "lint":  "eslint src/"
+                }
+}
