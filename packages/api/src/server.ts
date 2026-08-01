@@ -9,6 +9,8 @@ import { handleWhatIf } from './endpoints/whatif';
 import { handleDigitalTwin } from './endpoints/digital-twin';
 import { handleSOAP } from './endpoints/soap';
 import { handleExplain } from './endpoints/explain';
+import { handleStatus } from './endpoints/status';
+import { handleGetDemoPatients, handleGetPatientById } from './endpoints/patients';
 
 import { getDashboardData } from './endpoints/dashboard';
 import { login, register, getCurrentUser } from './endpoints/auth';
@@ -45,9 +47,14 @@ app.get('/health/ready', withObservability(readinessCheck));
 app.get('/health/metrics', withObservability(metricsEndpoint));
 
 // Core CDSS AI & Gemini Express Proxy API Endpoints
+app.get('/api/status', withObservability(handleStatus));
+app.get('/api/demoPatients', withObservability(handleGetDemoPatients));
+app.get('/api/patient/:id', withObservability(handleGetPatientById));
+
 app.post('/api/predict', withObservability(handlePredict));
 app.post('/api/chat', withObservability(handleChat));
 app.post('/api/ocr', withObservability(handleOCR));
+app.post('/api/upload', withObservability(handleOCR));
 app.post('/api/report', withObservability(handleReport));
 app.post('/api/translate', withObservability(handleTranslate));
 app.post('/api/whatif', withObservability(handleWhatIf));
