@@ -1,6 +1,17 @@
 import { RiskSeverityTier } from '@healthsense/clinical-models';
 import { ClinicalFeatureVector } from './PatientSnapshot';
 
+export type DiseaseId =
+  | 'diabetes'
+  | 'hypertension'
+  | 'ckd'
+  | 'cvd'
+  | 'stroke'
+  | 'metabolic_syndrome'
+  | 'diabetic_neuropathy'
+  | 'diabetic_retinopathy'
+  | 'heart_failure';
+
 export interface ContributingFactor {
   metric: string;
   value: string | number;
@@ -9,7 +20,7 @@ export interface ContributingFactor {
 }
 
 export interface DiseaseRiskResult {
-  diseaseId: 'diabetes' | 'hypertension' | 'ckd' | 'cvd' | 'stroke';
+  diseaseId: DiseaseId;
   diseaseName: string;
   riskScore: number; // 0 to 100
   severityTier: RiskSeverityTier;
@@ -17,10 +28,13 @@ export interface DiseaseRiskResult {
   contributingFactors: ContributingFactor[];
   requiredInputs: string[];
   missingInputs: string[];
+  reasoning?: string;
+  clinicalSummary?: string;
+  guidelineReferences?: string[];
 }
 
 export interface IDiseaseRiskModel {
-  diseaseId: 'diabetes' | 'hypertension' | 'ckd' | 'cvd' | 'stroke';
+  diseaseId: DiseaseId;
   diseaseName: string;
   calculateRisk(features: ClinicalFeatureVector): DiseaseRiskResult;
   calculateConfidence(features: ClinicalFeatureVector): number;

@@ -1,259 +1,213 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Upload, Cpu, Stethoscope, Sparkles, Activity, Play, Users, Zap } from 'lucide-react';
+import { Sparkles, Users, FileUp, UserPlus, ArrowRight, ShieldCheck, Activity, Stethoscope, Eye, Cpu, BookOpen, Layers } from 'lucide-react';
 import { useCDSS, DemoPatientKey } from '../context/CDSSContext';
-
-const ECGLine: React.FC = () => (
-  <svg className="absolute bottom-0 left-0 w-full" height="80" viewBox="0 0 1440 80" preserveAspectRatio="none">
-    <polyline
-      fill="none"
-      stroke="rgba(56,189,248,0.25)"
-      strokeWidth="2"
-      points="0,60 80,60 100,60 120,40 140,10 160,70 180,30 200,60 320,60 340,60 360,40 380,10 400,70 420,30 440,60 560,60 580,40 600,10 620,70 640,30 660,60 780,60 800,40 820,10 840,70 860,30 880,60 1000,60 1020,40 1040,10 1060,70 1080,30 1100,60 1220,60 1240,40 1260,10 1280,70 1300,30 1320,60 1440,60"
-      style={{ strokeDasharray: 2000, strokeDashoffset: 2000, animation: 'ecgDraw 3s ease forwards infinite' }}
-    />
-  </svg>
-);
-
-const DEMO_PROFILES: { key: DemoPatientKey; label: string; desc: string; risk: number; color: string }[] = [
-  { key: 'patient-healthy',     label: 'Healthy Baseline',    desc: 'No active conditions',           risk: 12, color: '#22c55e' },
-  { key: 'patient-prediabetes', label: 'Pre-Diabetic Adult',  desc: 'Borderline glucose',             risk: 52, color: '#f59e0b' },
-  { key: 'patient-diabetes',    label: 'Type 2 Diabetes',     desc: 'HbA1c 8.4% — High Risk',        risk: 82, color: '#ef4444' },
-  { key: 'patient-hypertension',label: 'Hypertension',        desc: 'SBP 154 mmHg',                  risk: 78, color: '#ef4444' },
-  { key: 'patient-ckd',         label: 'Stage 3b CKD',        desc: 'eGFR 48 — Urgent Nephrology',   risk: 91, color: '#ef4444' },
-  { key: 'patient-multimorbid', label: 'Multi-Comorbid',      desc: 'Complex Chronic Conditions',    risk: 96, color: '#ef4444' },
-];
-
-const QUICK_PROMPTS = [
-  'Predict 5-year kidney decline',
-  'Should I refer this patient?',
-  'What happens without medication?',
-  'Explain in Gujarati',
-  'Generate care plan',
-];
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { loadDemoProfile } = useCDSS();
-  const [query, setQuery] = useState('');
-  const [stage, setStage] = useState<'home' | 'select'>('home');
-  const [tick, setTick] = useState(0);
+  const { activePatientKey, loadDemoProfile, patient, currentVitals, currentLabs, riskAssessment } = useCDSS();
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const t = setInterval(() => setTick(p => p + 1), 2000);
-    return () => clearInterval(t);
-  }, []);
+  const demoScenarios: { key: DemoPatientKey; name: string; age: number; condition: string; risk: number; color: string }[] = [
+    { key: 'patient-diabetes', name: 'Ramesh Patel', age: 54, condition: 'Type 2 Diabetes + Stage 3b CKD', risk: 82, color: '#ef4444' },
+    { key: 'patient-hypertension', name: 'Sunita Sharma', age: 58, condition: 'Stage 2 Hypertension + High ASCVD Risk', risk: 74, color: '#f59e0b' },
+    { key: 'patient-ckd', name: 'Vikram Singh', age: 62, condition: 'Progressive CKD (eGFR 42 mL/min)', risk: 88, color: '#ef4444' },
+    { key: 'patient-prediabetes', name: 'Meena Joshi', age: 46, condition: 'Prediabetes + Metabolic Syndrome', risk: 48, color: '#eab308' },
+    { key: 'patient-healthy', name: 'Anil Kumar', age: 32, condition: 'Routine Assessment (Low Risk Baseline)', risk: 12, color: '#22c55e' },
+    { key: 'patient-multimorbid', name: 'Rajendra Verma', age: 66, condition: 'Multimorbid CVD, T2DM & Stroke Risk', risk: 92, color: '#dc2626' }
+  ];
 
-  const handleLaunch = (key: DemoPatientKey) => {
+  const handleSelectPatient = (key: DemoPatientKey) => {
+    setIsLoading(true);
     loadDemoProfile(key);
-    navigate('/clinician');
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
   };
 
+  const patientName = patient?.name?.[0]?.given?.join(' ') || 'Ramesh Patel';
+
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28, minHeight: '100vh', background: '#09090b' }} className="animate-in">
+      {/* Top Banner & Hero */}
+      <div
+        className="card"
+        style={{
+          padding: '40px 32px', borderRadius: 24,
+          background: 'linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,41,59,0.7) 100%)',
+          border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+          position: 'relative', overflow: 'hidden'
+        }}
+      >
+        <div style={{ position: 'absolute', right: -40, top: -40, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(56,189,248,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-      {/* ── AMBIENT BACKGROUND LAYER ── */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-        {/* Radial glow blobs */}
-        <div style={{ position: 'absolute', top: '10%', left: '15%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)', animation: 'pulse 6s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', bottom: '15%', right: '10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(56,189,248,0.09) 0%, transparent 70%)', animation: 'pulse 8s ease-in-out 2s infinite' }} />
-        <div style={{ position: 'absolute', top: '50%', right: '25%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%)', animation: 'pulse 10s ease-in-out 1s infinite' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 999, background: 'rgba(56,189,248,0.15)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Enterprise CDSS Command Center
+          </span>
+          <span style={{ fontSize: 11, color: '#64748b' }}>ICMR 2024 & ADA 2025 Compliant</span>
+        </div>
 
-        {/* Fine grid */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04 }}>
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(56,189,248,1)" strokeWidth="0.5" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-
-        {/* ECG strip */}
-        <ECGLine />
+        <h1 style={{ fontSize: 36, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.15, maxWidth: 720 }}>
+          "What will happen to this patient's future?"
+        </h1>
+        <p style={{ fontSize: 14, color: '#94a3b8', marginTop: 12, maxWidth: 640, lineHeight: 1.6 }}>
+          HealthSense AI predicts multi-disease progression trajectories, calculates SHAP attributions, and provides evidence-backed CDSS recommendations for primary healthcare centers across India.
+        </p>
       </div>
 
-      {/* ── MAIN CONTENT ── */}
-      <div className="animate-in" style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 820, margin: '0 auto', padding: '2rem' }}>
+      {/* 3 Primary Intake Entry Options */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        {/* Option 1: Load Demo Patient */}
+        <div
+          className="card"
+          style={{
+            padding: 24, borderRadius: 20, cursor: 'pointer', transition: 'all 0.2s',
+            border: '1px solid rgba(56,189,248,0.3)', background: 'rgba(30,41,59,0.6)'
+          }}
+          onClick={() => handleSelectPatient('patient-diabetes')}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8', marginBottom: 16 }}>
+            <Users style={{ width: 22, height: 22 }} />
+          </div>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>1. Load Demo Patient Profile</h3>
+          <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 }}>
+            Select from 6 pre-configured clinical patient bundles featuring T2DM, CKD, Hypertension, and Stroke risk profiles.
+          </p>
+        </div>
 
-        {stage === 'home' && (
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+        {/* Option 2: Upload Lab Report / OCR */}
+        <div
+          className="card"
+          style={{
+            padding: 24, borderRadius: 20, cursor: 'pointer', transition: 'all 0.2s',
+            border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(30,41,59,0.6)'
+          }}
+          onClick={() => navigate('/ocr-upload')}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e', marginBottom: 16 }}>
+            <FileUp style={{ width: 22, height: 22 }} />
+          </div>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>2. Upload Lab Report / OCR</h3>
+          <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 }}>
+            Drag & drop scanned laboratory PDF/images. Auto-extracts HbA1c, Creatinine, Fasting Sugar, BP, and BMI.
+          </p>
+        </div>
 
-            {/* Wordmark badge */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRadius: 999, background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', fontSize: 12, fontWeight: 600, color: '#38bdf8' }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', animation: 'pulse 2s infinite', display: 'inline-block' }} />
-              Enterprise AI Clinical Decision Intelligence Platform
-            </div>
+        {/* Option 3: Create New Patient */}
+        <div
+          className="card"
+          style={{
+            padding: 24, borderRadius: 20, cursor: 'pointer', transition: 'all 0.2s',
+            border: '1px solid rgba(129,140,248,0.3)', background: 'rgba(30,41,59,0.6)'
+          }}
+          onClick={() => navigate('/clinician')}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(129,140,248,0.15)', border: '1px solid rgba(129,140,248,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8', marginBottom: 16 }}>
+            <UserPlus style={{ width: 22, height: 22 }} />
+          </div>
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>3. New Patient Intake</h3>
+          <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 }}>
+            Open the Clinician Workstation with a clean form to enter custom vitals, symptoms, and clinical history.
+          </p>
+        </div>
+      </div>
 
-            {/* Hero headline */}
-            <div>
-              <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.04em', color: '#fff', marginBottom: '1rem' }}>
-                What will happen to<br />
-                <span style={{ background: 'linear-gradient(135deg, #60a5fa 0%, #38bdf8 50%, #818cf8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  this patient's future?
-                </span>
-              </h1>
-              <p style={{ fontSize: 16, color: '#94a3b8', maxWidth: 540, margin: '0 auto', lineHeight: 1.6 }}>
-                HealthSense AI predicts chronic disease trajectories, explains every decision, and guides the right clinical action — powered by ICMR, ADA, KDIGO, and AHA guidelines.
-              </p>
-            </div>
+      {/* Demo Patient Scenario Selector (6 Profiles) */}
+      <div className="card" style={{ padding: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Sparkles style={{ width: 16, height: 16, color: '#38bdf8' }} />
+          Select Clinical Demo Patient Scenario
+        </h3>
 
-            {/* AI Prompt Bar */}
-            <div style={{ width: '100%', position: 'relative' }}>
-              <div style={{ position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)', color: '#38bdf8' }}>
-                <Sparkles style={{ width: 18, height: 18 }} />
-              </div>
-              <input
-                type="text"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') setStage('select'); }}
-                placeholder="Ask AI: 'Predict 5-year kidney decline for a 56-year-old diabetic patient...'"
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+          {demoScenarios.map((demo) => {
+            const isSelected = activePatientKey === demo.key;
+            return (
+              <div
+                key={demo.key}
+                onClick={() => handleSelectPatient(demo.key)}
                 style={{
-                  width: '100%', padding: '18px 140px 18px 52px',
-                  borderRadius: 20, border: '1px solid rgba(56,189,248,0.3)',
-                  background: 'rgba(30,41,59,0.8)', backdropFilter: 'blur(16px)',
-                  color: '#fff', fontSize: 15, outline: 'none',
-                  boxShadow: '0 0 40px rgba(56,189,248,0.1)',
-                  transition: 'all 0.2s',
-                }}
-                onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.6)'; e.target.style.boxShadow = '0 0 60px rgba(56,189,248,0.2)'; }}
-                onBlur={e => { e.target.style.borderColor = 'rgba(56,189,248,0.3)'; e.target.style.boxShadow = '0 0 40px rgba(56,189,248,0.1)'; }}
-              />
-              <button
-                onClick={() => setStage('select')}
-                style={{
-                  position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                  padding: '10px 20px', borderRadius: 14,
-                  background: 'linear-gradient(135deg, #2563eb, #38bdf8)',
-                  color: '#fff', fontWeight: 700, fontSize: 14,
-                  border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                  padding: 16, borderRadius: 16,
+                  background: isSelected ? 'rgba(56,189,248,0.12)' : 'rgba(30,41,59,0.6)',
+                  border: `1px solid ${isSelected ? 'rgba(56,189,248,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                  cursor: 'pointer', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', gap: 8
                 }}
               >
-                Analyse <ArrowRight style={{ width: 16, height: 16 }} />
-              </button>
-            </div>
-
-            {/* Quick Prompt Pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
-              {QUICK_PROMPTS.map((p, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setQuery(p); setStage('select'); }}
-                  style={{
-                    padding: '6px 14px', borderRadius: 999,
-                    background: 'rgba(30,41,59,0.7)', border: '1px solid rgba(255,255,255,0.08)',
-                    color: '#94a3b8', fontSize: 12, cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => { (e.target as HTMLButtonElement).style.color = '#fff'; (e.target as HTMLButtonElement).style.borderColor = 'rgba(56,189,248,0.4)'; }}
-                  onMouseLeave={e => { (e.target as HTMLButtonElement).style.color = '#94a3b8'; (e.target as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.08)'; }}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-
-            {/* Action Trio */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, width: '100%' }}>
-              {[
-                { icon: <Play style={{ width: 20, height: 20 }} />, label: 'Load Demo Patient', sub: '6 Clinical Scenarios', action: () => setStage('select'), color: '#2563eb' },
-                { icon: <Upload style={{ width: 20, height: 20 }} />, label: 'Upload Lab Report', sub: 'OCR Auto-Extraction', action: () => navigate('/ocr-upload'), color: '#38bdf8' },
-                { icon: <Cpu style={{ width: 20, height: 20 }} />, label: 'Digital Twin Model', sub: 'Interactive Organ View', action: () => navigate('/digital-twin'), color: '#818cf8' },
-              ].map((item, i) => (
-                <button
-                  key={i}
-                  onClick={item.action}
-                  style={{
-                    padding: '20px 16px', borderRadius: 20,
-                    background: 'rgba(30,41,59,0.7)', backdropFilter: 'blur(12px)',
-                    border: `1px solid rgba(255,255,255,0.08)`,
-                    cursor: 'pointer', textAlign: 'center',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={e => { const el = e.currentTarget; el.style.transform = 'translateY(-4px)'; el.style.borderColor = `${item.color}60`; el.style.boxShadow = `0 12px 30px rgba(0,0,0,0.4), 0 0 20px ${item.color}20`; }}
-                  onMouseLeave={e => { const el = e.currentTarget; el.style.transform = 'none'; el.style.borderColor = 'rgba(255,255,255,0.08)'; el.style.boxShadow = 'none'; }}
-                >
-                  <div style={{ width: 44, height: 44, borderRadius: 14, background: `${item.color}20`, border: `1px solid ${item.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color }}>
-                    {item.icon}
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>{item.label}</div>
-                    <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{item.sub}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Credibility strip */}
-            <div style={{ display: 'flex', gap: 24, fontSize: 11, color: '#475569', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16, width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {['ICMR Guidelines', 'ADA 2024', 'KDIGO 2023', 'AHA Standards', 'WHO Protocols', 'HL7 FHIR R4', 'ABDM Ready', 'Sub-50ms Engine'].map(tag => (
-                <span key={tag} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#38bdf8', display: 'inline-block' }} />
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {stage === 'select' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ textAlign: 'center' }}>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>
-                Select a Clinical Scenario
-              </h2>
-              <p style={{ fontSize: 14, color: '#64748b', marginTop: 6 }}>
-                Each profile runs all 12 AI engines in real-time — Educational Simulation
-              </p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-              {DEMO_PROFILES.map(p => (
-                <button
-                  key={p.key}
-                  onClick={() => handleLaunch(p.key)}
-                  style={{
-                    padding: '20px', borderRadius: 20,
-                    background: 'rgba(30,41,59,0.8)', backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    textAlign: 'left', cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', gap: 12,
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={e => { const el = e.currentTarget; el.style.transform = 'translateY(-3px)'; el.style.borderColor = `${p.color}50`; el.style.boxShadow = `0 16px 32px rgba(0,0,0,0.4), 0 0 20px ${p.color}15`; }}
-                  onMouseLeave={e => { const el = e.currentTarget; el.style.transform = 'none'; el.style.borderColor = 'rgba(255,255,255,0.08)'; el.style.boxShadow = 'none'; }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${p.color}18`, border: `1px solid ${p.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Users style={{ width: 18, height: 18, color: p.color }} />
-                    </div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: p.color }}>{p.risk}%</div>
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>{p.label}</div>
-                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>{p.desc}</div>
-                  </div>
-                  {/* Mini risk bar */}
-                  <div style={{ height: 4, borderRadius: 999, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${p.risk}%`, borderRadius: 999, background: `linear-gradient(90deg, ${p.color}80, ${p.color})`, transition: 'width 0.6s ease' }} />
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button onClick={() => setStage('home')} style={{ alignSelf: 'center', padding: '8px 20px', borderRadius: 999, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#64748b', fontSize: 13, cursor: 'pointer' }}>
-              ← Back to Home
-            </button>
-          </div>
-        )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{demo.name}</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: `${demo.color}20`, color: demo.color }}>
+                    {demo.risk}% Risk
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: '#94a3b8' }}>Age {demo.age} • {demo.condition}</div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <style>{`
-        @keyframes ecgDraw { 0%{stroke-dashoffset:2000} 70%{stroke-dashoffset:0} 100%{stroke-dashoffset:-2000} }
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.7;transform:scale(1.05)} }
-      `}</style>
+      {/* Active Hydrated Patient Summary Card */}
+      <div className="card" style={{ padding: 24, borderLeft: '4px solid #38bdf8', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, #2563eb, #38bdf8)', color: '#fff', fontSize: 20, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {patientName.charAt(0)}
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{patientName}</h3>
+                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, background: 'rgba(239,68,68,0.15)', color: '#ef4444', fontWeight: 800, border: '1px solid rgba(239,68,68,0.3)' }}>
+                  {riskAssessment.overallTier.toUpperCase()} RISK ({riskAssessment.overallRiskScore}%)
+                </span>
+              </div>
+              <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                Age 54 • Male • ABHA: 91-8273-4920-1123 • PHC Gandhinagar District • Dr. Ananya Sharma
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-primary btn-sm" onClick={() => navigate('/clinician')}>
+              <Stethoscope style={{ width: 14, height: 14 }} /> Open Workstation
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => navigate('/digital-twin')}>
+              <Cpu style={{ width: 14, height: 14 }} /> Digital Twin
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => navigate('/explainability')}>
+              <Eye style={{ width: 14, height: 14 }} /> Explain Prediction
+            </button>
+          </div>
+        </div>
+
+        {/* Biomarkers Strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ fontSize: 10, color: '#64748b' }}>Blood Pressure</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{currentVitals.systolicBP}/{currentVitals.diastolicBP} mmHg</div>
+          </div>
+          <div style={{ padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ fontSize: 10, color: '#64748b' }}>HbA1c</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#ef4444' }}>{currentLabs.hba1c}%</div>
+          </div>
+          <div style={{ padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ fontSize: 10, color: '#64748b' }}>eGFR</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#f59e0b' }}>{currentLabs.egfr} mL/min</div>
+          </div>
+          <div style={{ padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ fontSize: 10, color: '#64748b' }}>BMI</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{currentVitals.bmi} kg/m²</div>
+          </div>
+          <div style={{ padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ fontSize: 10, color: '#64748b' }}>Fasting Glucose</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{currentLabs.fastingGlucose} mg/dL</div>
+          </div>
+          <div style={{ padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ fontSize: 10, color: '#64748b' }}>Active Meds</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#38bdf8' }}>Metformin, Telmisartan</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

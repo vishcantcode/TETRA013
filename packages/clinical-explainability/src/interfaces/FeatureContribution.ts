@@ -7,7 +7,7 @@ export interface FeatureAttribution {
 }
 
 export interface DiseaseFeatureAttribution {
-  diseaseId: 'diabetes' | 'hypertension' | 'ckd' | 'cvd' | 'stroke';
+  diseaseId: string;
   diseaseName: string;
   topPositiveContributors: FeatureAttribution[];
   topNegativeContributors: FeatureAttribution[];

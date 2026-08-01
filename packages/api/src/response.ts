@@ -1,3 +1,5 @@
+import { Response } from 'express';
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -13,7 +15,7 @@ export interface ApiResponse<T = any> {
   };
 }
 
-export function createSuccessResponse<T>(data: T, correlationId: string, durationMs?: number): ApiResponse<T> {
+export function createSuccessResponse<T>(data: T, correlationId: string = 'req-1', durationMs?: number): ApiResponse<T> {
   return {
     success: true,
     data,
@@ -25,7 +27,7 @@ export function createSuccessResponse<T>(data: T, correlationId: string, duratio
   };
 }
 
-export function createErrorResponse(code: string, message: string, correlationId: string, details?: any): ApiResponse<null> {
+export function createErrorResponse(code: string, message: string, correlationId: string = 'req-1', details?: any): ApiResponse<null> {
   return {
     success: false,
     error: { code, message, details },
@@ -34,4 +36,12 @@ export function createErrorResponse(code: string, message: string, correlationId
       timestamp: new Date().toISOString()
     }
   };
+}
+
+export function sendSuccess<T>(res: Response, data: T, status = 200) {
+  return res.status(status).json(createSuccessResponse(data));
+}
+
+export function sendError(res: Response, status = 400, code: string, message: string, details?: any) {
+  return res.status(status).json(createErrorResponse(code, message, 'req-1', details));
 }

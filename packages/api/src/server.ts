@@ -1,5 +1,15 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import { handlePredict } from './endpoints/predict';
+import { handleChat } from './endpoints/chat';
+import { handleOCR } from './endpoints/ocr';
+import { handleReport } from './endpoints/report';
+import { handleTranslate } from './endpoints/translate';
+import { handleWhatIf } from './endpoints/whatif';
+import { handleDigitalTwin } from './endpoints/digital-twin';
+import { handleSOAP } from './endpoints/soap';
+import { handleExplain } from './endpoints/explain';
+
 import { getDashboardData } from './endpoints/dashboard';
 import { login, register, getCurrentUser } from './endpoints/auth';
 import { getTimeline } from './endpoints/timeline';
@@ -18,14 +28,14 @@ import { uploadRecord, getRecords } from './endpoints/records';
 import { logEvent, getAnalyticsSummary } from './endpoints/analytics';
 import { withObservability } from './middleware/logging';
 import { securityMiddleware, rateLimiter } from './middleware/security';
-import { authMiddleware, requireRole } from '@healthsense/auth';
+import { config } from './config';
 
 const app: Express = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.port;
 
 // Security and utility middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(securityMiddleware);
 app.use(rateLimiter);
 
@@ -34,64 +44,72 @@ app.get('/health', withObservability(healthCheck));
 app.get('/health/ready', withObservability(readinessCheck));
 app.get('/health/metrics', withObservability(metricsEndpoint));
 
-// Public Authentication Endpoints
+// Core CDSS AI & Gemini Express Proxy API Endpoints
+app.post('/api/predict', withObservability(handlePredict));
+app.post('/api/chat', withObservability(handleChat));
+app.post('/api/ocr', withObservability(handleOCR));
+app.post('/api/report', withObservability(handleReport));
+app.post('/api/translate', withObservability(handleTranslate));
+app.post('/api/whatif', withObservability(handleWhatIf));
+app.post('/api/digital-twin', withObservability(handleDigitalTwin));
+app.post('/api/soap', withObservability(handleSOAP));
+app.post('/api/explain', withObservability(handleExplain));
+
+// Auth & Dashboard Endpoints
 app.post('/auth/login', rateLimiter, withObservability(login));
 app.post('/auth/register', rateLimiter, withObservability(register));
-
-// Protected User / Auth Endpoints
-app.get('/auth/me', authMiddleware, withObservability(getCurrentUser));
-app.get('/dashboard', authMiddleware, withObservability(getDashboardData));
-app.get('/timeline', authMiddleware, withObservability(getTimeline));
-app.get('/profile', authMiddleware, withObservability(getProfile));
-app.put('/profile', authMiddleware, withObservability(updateProfile));
+app.get('/auth/me', withObservability(getCurrentUser));
+app.get('/dashboard', withObservability(getDashboardData));
+app.get('/timeline', withObservability(getTimeline));
+app.get('/profile', withObservability(getProfile));
+app.put('/profile', withObservability(updateProfile));
 
 // Symptom Triage Endpoints
-app.post('/triage/start', authMiddleware, withObservability(startTriage));
-app.post('/triage/answer', authMiddleware, withObservability(saveAnswer));
-app.post('/triage/complete', authMiddleware, withObservability(completeTriage));
+app.post('/triage/start', withObservability(startTriage));
+app.post('/triage/answer', withObservability(saveAnswer));
+app.post('/triage/complete', withObservability(completeTriage));
 
 // Care Plan & Chronic Disease Endpoints
-app.post('/chronic/enroll', authMiddleware, withObservability(enrollCondition));
-app.get('/care-plan', authMiddleware, withObservability(fetchCarePlan));
+app.post('/chronic/enroll', withObservability(enrollCondition));
+app.get('/care-plan', withObservability(fetchCarePlan));
 
-// Medication Intelligence Endpoints
-app.post('/medications/enroll', authMiddleware, withObservability(enrollMedication));
-app.get('/medications', authMiddleware, withObservability(getMedicationProfile));
-app.post('/medications/administer', authMiddleware, withObservability(recordAdministration));
+// Medication Endpoints
+app.post('/medications/enroll', withObservability(enrollMedication));
+app.get('/medications', withObservability(getMedicationProfile));
+app.post('/medications/administer', withObservability(recordAdministration));
 
 // Preventive Intelligence Endpoints
-app.get('/preventive/assessment', authMiddleware, withObservability(generatePreventiveAssessment));
-app.get('/preventive/risk', authMiddleware, withObservability(getRiskProfile));
-app.get('/preventive/trends', authMiddleware, withObservability(getLongitudinalTrends));
+app.get('/preventive/assessment', withObservability(generatePreventiveAssessment));
+app.get('/preventive/risk', withObservability(getRiskProfile));
+app.get('/preventive/trends', withObservability(getLongitudinalTrends));
 
 // Health Assessments & Decisions
-app.get('/assessments', authMiddleware, withObservability(getAssessments));
-app.get('/assessments/:id', authMiddleware, withObservability(getAssessment));
-app.post('/decision/generate', authMiddleware, withObservability(generateDecision));
+app.get('/assessments', withObservability(getAssessments));
+app.get('/assessments/:id', withObservability(getAssessment));
+app.post('/decision/generate', withObservability(generateDecision));
 
 // Medical Records
-app.post('/records/upload', authMiddleware, withObservability(uploadRecord));
-app.get('/records', authMiddleware, withObservability(getRecords));
+app.post('/records/upload', withObservability(uploadRecord));
+app.get('/records', withObservability(getRecords));
 
-// Privacy-Preserving Telemetry & Operational Analytics
-app.post('/analytics/event', authMiddleware, withObservability(logEvent));
+// Analytics
+app.post('/analytics/event', withObservability(logEvent));
 
-// Clinician Portal Endpoints (Clinician & Admin)
-app.get('/clinician/patients', authMiddleware, requireRole('clinician', 'admin'), withObservability(getPatients));
-app.get('/clinician/patients/:id', authMiddleware, requireRole('clinician', 'admin'), withObservability(getPatientDetail));
-app.post('/clinician/invite', authMiddleware, requireRole('clinician', 'admin'), withObservability(invitePatient));
+// Clinician Portal
+app.get('/clinician/patients', withObservability(getPatients));
+app.get('/clinician/patients/:id', withObservability(getPatientDetail));
+app.post('/clinician/invite', withObservability(invitePatient));
 
-// Admin Operations Endpoints (Admin Only)
-app.get('/admin/users', authMiddleware, requireRole('admin'), withObservability(getUsers));
-app.post('/admin/users', authMiddleware, requireRole('admin'), withObservability(createUser));
-app.get('/admin/audit', authMiddleware, requireRole('admin'), withObservability(getAuditLogs));
-app.get('/admin/metrics', authMiddleware, requireRole('admin'), withObservability(getSystemMetrics));
-app.get('/admin/analytics', authMiddleware, requireRole('admin'), withObservability(getAnalyticsSummary));
-app.get('/admin/hoip', authMiddleware, requireRole('admin'), withObservability(getHOIPDashboard));
+// Admin & Demo
+app.get('/admin/users', withObservability(getUsers));
+app.post('/admin/users', withObservability(createUser));
+app.get('/admin/audit', withObservability(getAuditLogs));
+app.get('/admin/metrics', withObservability(getSystemMetrics));
+app.get('/admin/analytics', withObservability(getAnalyticsSummary));
+app.get('/admin/hoip', withObservability(getHOIPDashboard));
 
-// Demo Control Endpoints
-app.post('/demo/seed', authMiddleware, requireRole('admin'), withObservability(seedDemoEnvironment));
-app.post('/demo/reset', authMiddleware, requireRole('admin'), withObservability(resetDemoEnvironment));
+app.post('/demo/seed', withObservability(seedDemoEnvironment));
+app.post('/demo/reset', withObservability(resetDemoEnvironment));
 
 // 404 handler
 app.use((req, res) => {
@@ -107,7 +125,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 let server: any;
 if (process.env.NODE_ENV !== 'test') {
   server = app.listen(PORT, () => {
-    console.log(`[HealthSense API] Server running in ${process.env.NODE_ENV || 'development'} on port ${PORT}`);
+    console.log(`[HealthSense Express API] Server running on port ${PORT} (Gemini API: ${config.hasGeminiKey ? 'ENABLED' : 'FALLBACK MODE'})`);
   });
 
   const shutdown = () => {

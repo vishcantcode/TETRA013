@@ -1,5 +1,3 @@
-import { HealthSnapshot } from '@healthsense/patient-digital-twin';
-
 export interface TimelineMetadata {
   reconstructedAt: Date;
   snapshotCount: number;
@@ -19,7 +17,7 @@ export interface PatientTimeline {
   patientId: string;
   metadata: TimelineMetadata;
   events: ClinicalEvent[];
-  snapshots: HealthSnapshot[];
+  snapshots: any[];
 }
 
 export interface ClinicalTrend {

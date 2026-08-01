@@ -1,5 +1,5 @@
 import { RiskSeverityTier } from '@healthsense/clinical-models';
-import { DiseaseRiskResult } from './RiskModel';
+import { DiseaseRiskResult, DiseaseId } from './RiskModel';
 import { PatientSnapshot } from './PatientSnapshot';
 
 export interface UnifiedRiskAssessment {
@@ -14,9 +14,9 @@ export interface UnifiedRiskAssessment {
     riskScore: number;
     severityTier: RiskSeverityTier;
   };
-  comorbidityIndex: number; // 0 to 5 count of active comorbidities/high risk overlaps
+  comorbidityIndex: number; // count of active comorbidities/high risk overlaps
   numberOfMissingInputs: number;
   overallConfidenceScore: number; // 0 to 1.0
-  diseaseResults: Record<'diabetes' | 'hypertension' | 'ckd' | 'cvd' | 'stroke', DiseaseRiskResult>;
+  diseaseResults: Record<DiseaseId, DiseaseRiskResult>;
   snapshot: PatientSnapshot;
 }

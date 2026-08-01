@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -27,10 +27,6 @@ export async function fetchApi<T = any>(endpoint: string, options: RequestInit =
   if (response.status === 401) {
     localStorage.removeItem('hs_token');
     localStorage.removeItem('hs_user');
-    if (!window.location.pathname.startsWith('/auth')) {
-      window.location.href = '/auth';
-    }
-    throw new ApiError('UNAUTHORIZED', 'Session expired', 401);
   }
 
   const body: ApiResponse<T> = await response.json().catch(() => ({
@@ -50,8 +46,24 @@ export async function fetchApi<T = any>(endpoint: string, options: RequestInit =
   return body.data as T;
 }
 
-// Typed API helpers
+// Typed API helpers connecting to backend proxy
 export const api = {
+  cdss: {
+    predict: (data: any) => fetchApi<any>('/api/predict', { method: 'POST', body: JSON.stringify(data) }),
+    chat: (data: { message: string; patientContext?: any; conversationHistory?: any[] }) =>
+      fetchApi<{ reply: string; timestamp: string; guidelinesReferenced: string[] }>('/api/chat', { method: 'POST', body: JSON.stringify(data) }),
+    ocr: (data: { documentText?: string; imageBase64?: string; filename?: string }) =>
+      fetchApi<any>('/api/ocr', { method: 'POST', body: JSON.stringify(data) }),
+    report: (data: { patient: any; assessment: any; language?: string }) =>
+      fetchApi<any>('/api/report', { method: 'POST', body: JSON.stringify(data) }),
+    translate: (data: { text: string; targetLanguage: string }) =>
+      fetchApi<{ translatedText: string; targetLanguage: string }>('/api/translate', { method: 'POST', body: JSON.stringify(data) }),
+    whatif: (data: any) => fetchApi<any>('/api/whatif', { method: 'POST', body: JSON.stringify(data) }),
+    digitalTwin: (data: any) => fetchApi<any>('/api/digital-twin', { method: 'POST', body: JSON.stringify(data) }),
+    soap: (data: any) => fetchApi<{ soapNote: string; generatedAt: string; guidelines: string[] }>('/api/soap', { method: 'POST', body: JSON.stringify(data) }),
+    explain: (data: { diseaseId: string; patient: any; assessment?: any; language?: string }) =>
+      fetchApi<{ diseaseId: string; explanation: string; confidenceScore: number }>('/api/explain', { method: 'POST', body: JSON.stringify(data) }),
+  },
   auth: {
     login: (email: string, password: string) =>
       fetchApi<{ token: string; user: any }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),

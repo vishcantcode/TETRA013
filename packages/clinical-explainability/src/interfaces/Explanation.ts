@@ -11,8 +11,9 @@ export interface CompleteExplainabilityReport {
     en: string;
     hi: string;
     gu: string;
+    ta?: string;
   };
-  diseaseAttributions: Record<'diabetes' | 'hypertension' | 'ckd' | 'cvd' | 'stroke', DiseaseFeatureAttribution>;
+  diseaseAttributions: Record<string, DiseaseFeatureAttribution>;
   guidelineCitations: GuidelineCitation[];
   decisionTrace: DecisionTrace;
   confidenceBreakdown: ConfidenceBreakdown;

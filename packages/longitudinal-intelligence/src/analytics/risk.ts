@@ -9,11 +9,11 @@ export class RiskEvolutionEngine {
       return evolutions;
     }
 
-    const initial = snapshots[0].profile.risk.factors;
-    const current = snapshots[snapshots.length - 1].profile.risk.factors;
+    const initial: string[] = snapshots[0]?.profile?.risk?.factors || [];
+    const current: string[] = snapshots[snapshots.length - 1]?.profile?.risk?.factors || [];
 
     // Detect emerged risks
-    current.forEach(f => {
+    current.forEach((f: string) => {
       if (!initial.includes(f)) {
         evolutions.push({ riskFactor: f, state: 'emerging' });
       } else {
@@ -22,7 +22,7 @@ export class RiskEvolutionEngine {
     });
 
     // Detect resolved risks
-    initial.forEach(f => {
+    initial.forEach((f: string) => {
       if (!current.includes(f)) {
         evolutions.push({ riskFactor: f, state: 'resolved' });
       }

@@ -1,4 +1,3 @@
-import { PatientTwin } from '@healthsense/patient-digital-twin';
 import { LongitudinalInsight } from './domain';
 import { TimelineEngine } from './timeline';
 import { TrendAnalysisEngine } from './analytics/trend-analysis';
@@ -17,7 +16,7 @@ export class LongitudinalIntelligenceEngine {
   private riskEngine = new RiskEvolutionEngine();
   private predictionEngine = new PredictionEngine();
 
-  public analyze(twin: PatientTwin): LongitudinalInsight[] {
+  public analyze(twin: any): LongitudinalInsight[] {
     const startTime = Date.now();
     const insights: LongitudinalInsight[] = [];
 
@@ -48,9 +47,8 @@ export class LongitudinalIntelligenceEngine {
     const predictions = this.predictionEngine.identifySignals(timeline);
     predictions.forEach(p => insights.push({ id: `ins-${Date.now()}-${Math.random()}`, type: 'signal', payload: p, timestamp: new Date() }));
 
-    // Observability (Mocked for brevity)
     const duration = Date.now() - startTime;
-    console.log(`[LCIE] Analyzed twin ${twin.patientId} in ${duration}ms, generated ${insights.length} insights.`);
+    console.log(`[LCIE] Analyzed twin ${twin?.patientId || 'patient'} in ${duration}ms, generated ${insights.length} insights.`);
 
     return insights;
   }
