@@ -9,7 +9,7 @@ export default function PatientEducationPage() {
   const playAudio = () => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(educationPlan.audioGuidance.scriptText);
-      utterance.lang = educationLanguage === 'hi' ? 'hi-IN' : educationLanguage === 'gu' ? 'gu-IN' : educationLanguage === 'ta' ? 'ta-IN' : 'en-US';
+      utterance.lang = educationLanguage === 'hi' ? 'hi-IN' : educationLanguage === 'gu' ? 'gu-IN' : educationLanguage === 'ta' ? 'ta-IN' : educationLanguage === 'mr' ? 'mr-IN' : 'en-US';
       window.speechSynthesis.speak(utterance);
     } else {
       alert(`Playing Audio Guidance Script (${educationLanguage.toUpperCase()}): ${educationPlan.audioGuidance.scriptText}`);
@@ -45,16 +45,17 @@ export default function PatientEducationPage() {
         </div>
       </div>
 
-      {/* Vernacular Language Switcher Bar (EN, HI, GU, TA) */}
+      {/* Vernacular Language Switcher Bar (EN, HI, GU, TA, MR) */}
       <div className="card" style={{ padding: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8' }}>Select Vernacular Language:</span>
         <div style={{ display: 'flex', gap: 6 }}>
-          {(['en', 'hi', 'gu', 'ta'] as SupportedLanguage[]).map(lang => {
+          {(['en', 'hi', 'gu', 'ta', 'mr'] as SupportedLanguage[]).map(lang => {
             const labels: Record<SupportedLanguage, string> = {
               en: 'English',
               hi: 'हिंदी (Hindi)',
               gu: 'ગુજરાતી (Gujarati)',
-              ta: 'தமிழ் (Tamil)'
+              ta: 'தமிழ் (Tamil)',
+              mr: 'मराठी (Marathi)'
             };
             const isSelected = educationLanguage === lang;
             return (

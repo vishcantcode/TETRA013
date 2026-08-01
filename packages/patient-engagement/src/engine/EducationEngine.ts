@@ -33,7 +33,7 @@ export class EducationEngine {
     const summary: VernacularHealthSummary = {
       language,
       headline: assessment.overallRiskScore >= 75 ? 'Important Health Notice' : assessment.overallRiskScore >= 40 ? 'Moderate Health Attention Required' : 'Good Health Status',
-      summaryText: vernacularTexts[language] || vernacularTexts.en,
+      summaryText: (vernacularTexts as any)[language] || vernacularTexts.en,
       keyActionMessage: assessment.overallRiskScore >= 75 ? 'Schedule specialist review and monitor symptoms daily.' : 'Maintain active lifestyle and balanced diet.',
       readingGradeLevel: 'Grade 6-8'
     };

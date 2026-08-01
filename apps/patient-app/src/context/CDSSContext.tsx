@@ -8,7 +8,7 @@ import { DigitalTwinEngine, DigitalTwin } from '@healthsense/patient-digital-twi
 import { PopulationAnalyticsEngine, PopulationSnapshot } from '@healthsense/population-health';
 
 export type DemoPatientKey = 'patient-healthy' | 'patient-prediabetes' | 'patient-diabetes' | 'patient-hypertension' | 'patient-ckd' | 'patient-multimorbid';
-export type SupportedLanguage = 'en' | 'hi' | 'gu' | 'ta';
+export type SupportedLanguage = 'en' | 'hi' | 'gu' | 'ta' | 'mr';
 
 export interface EditableVitals {
   systolicBP: number;

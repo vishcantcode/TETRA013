@@ -50,8 +50,8 @@ export async function fetchApi<T = any>(endpoint: string, options: RequestInit =
 export const api = {
   cdss: {
     predict: (data: any) => fetchApi<any>('/api/predict', { method: 'POST', body: JSON.stringify(data) }),
-    chat: (data: { message: string; patientContext?: any; conversationHistory?: any[] }) =>
-      fetchApi<{ reply: string; timestamp: string; guidelinesReferenced: string[] }>('/api/chat', { method: 'POST', body: JSON.stringify(data) }),
+    chat: (data: { message: string; mode?: string; pageContext?: string; language?: string; patientContext?: any; conversationHistory?: any[] }) =>
+      fetchApi<{ reply: string; mode?: string; language?: string; confidenceScore?: number; suggestedChips?: string[]; timestamp: string; guidelinesReferenced: string[] }>('/api/chat', { method: 'POST', body: JSON.stringify(data) }),
     ocr: (data: { documentText?: string; imageBase64?: string; filename?: string }) =>
       fetchApi<any>('/api/ocr', { method: 'POST', body: JSON.stringify(data) }),
     report: (data: { patient: any; assessment: any; language?: string }) =>

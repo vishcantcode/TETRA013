@@ -27,5 +27,23 @@ export const LOCALIZATION_DICTIONARY: Record<SupportedLanguage, Record<string, s
     DIET_LABEL: 'આહાર સંબંધી સૂચનાઓ',
     EXERCISE_LABEL: 'શારીરિક પ્રવૃત્તિ અને કસરત',
     EMERGENCY_CONTACT: 'છાતીમાં દુખાવો, શ્વાસ ચડવો અથવા અતિશય અસ્વસ્થતા થાય તો તાત્કાલિક ૧૦૮ પર કોલ કરો અથવા હોસ્પિટલ પહોંચો.'
+  },
+  ta: {
+    HEALTH_SUMMARY_TITLE: 'தனிப்பயனாக்கப்பட்ட சுகாதாரப் பராமரிப்புத் திட்டம்',
+    DAILY_GOALS_LABEL: 'தினசரி இலக்குகள்',
+    WEEKLY_GOALS_LABEL: 'வாராந்திர இலக்குகள்',
+    RED_FLAGS_LABEL: 'எச்சரிக்கை அறிகுறிகள்',
+    DIET_LABEL: 'உணவு வழிகாட்டுதல்கள்',
+    EXERCISE_LABEL: 'உடற்பயிற்சி',
+    EMERGENCY_CONTACT: 'நெஞ்சு வலி இருந்தால் உடனடியாக 108 ஐ அழைக்கவும்.'
+  },
+  mr: {
+    HEALTH_SUMMARY_TITLE: 'वैयक्तिक आरोग्य काळजी योजना',
+    DAILY_GOALS_LABEL: 'दैनिक उद्दिष्टे',
+    WEEKLY_GOALS_LABEL: 'साप्ताहिक उद्दिष्टे',
+    RED_FLAGS_LABEL: 'महत्त्वाचे चेतावणी लक्षणे',
+    DIET_LABEL: 'आहार मार्गदर्शक तत्त्वे',
+    EXERCISE_LABEL: 'शारीरिक हालचाल आणि व्यायाम',
+    EMERGENCY_CONTACT: 'छातीत दुखणे किंवा चक्कर आल्यास 108 वर कॉल करा.'
   }
 };
