@@ -1,0 +1,2 @@
+#!/bin/bash
+pnpm run typecheck && pnpm run lint && pnpm run test
