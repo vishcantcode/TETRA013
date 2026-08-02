@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Light Theme - Enterprise Healthcare (Google Health / Epic Systems / Oracle Health style) */
+    --bg-main: #FFFFFF;
+    --bg-secondary: #F6FAFF;
+    --bg-card: #FFFFFF;
+    --border-color: #E5EEF8;
+    --primary: #1976D2;
+    --primary-hover: #1565C0;
+    --secondary: #2E7D32;
+    --secondary-hover: #1B5E20;
+    --accent: #26A69A;
+    --warning: #F9A825;
+    --danger: #D32F2F;
+    --text-main: #1B263B;
+    --text-secondary: #4A5568;
+    --bg-sidebar: #FFFFFF;
+    --bg-navbar: #FFFFFF;
+    --shadow-sm: 0 1px 3px rgba(25, 118, 210, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(25, 118, 210, 0.08), 0 2px 4px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 25px rgba(25, 118, 210, 0.12), 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    /* Dark Theme - Deep Medical Navy (No Pure Black) */
+    --bg-main: #081A2B;
+    --bg-secondary: #102840;
+    --bg-card: #122C46;
+    --bg-hover: #183A5C;
+    --border-color: #1A3E60;
+    --primary: #42A5F5;
+    --primary-hover: #64B5F6;
+    --secondary: #66BB6A;
+    --accent: #4DD0E1;
+    --warning: #FFA726;
+    --danger: #EF5350;
+    --text-main: #FFFFFF;
+    --text-secondary: #BFD4E5;
+    --bg-sidebar: #071523;
+    --bg-navbar: #0B223A;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Inter', 'Google Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+  }
+}
+
+/* MICRO ANIMATIONS & SMOOTH TRANSITIONS */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(66, 165, 245, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(66, 165, 245, 0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(25, 118, 210, 0.6);
+}

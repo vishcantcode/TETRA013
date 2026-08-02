@@ -1,0 +1,6 @@
+{
+  "name": "HealthSense AI",
+  "description": "AI-Powered Clinical Decision Support System for Early Detection and Referral of Lifestyle Diseases.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

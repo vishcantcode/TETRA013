@@ -1,12 +1,26 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "baseUrl": ".",
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
     "paths": {
-      "@healthsense/*": ["packages/*/src"]
-    }
-  },
-  "include": ["packages/*/src/**/*", "apps/*/src/**/*", "scripts/**/*"]
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
 }
