@@ -52,11 +52,15 @@ function getNvidiaApiKey(task: 'nlp' | 'chat'): string {
     case 'nlp': key = process.env.NVIDIA_NLP_API_KEY; break;
     case 'chat': key = process.env.NVIDIA_CHAT_API_KEY; break;
   }
-  return key || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || '';
+  const finalKey = key || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || '';
+  if (!finalKey) throw new Error(`NVIDIA ${task.toUpperCase()} API key is not configured.`);
+  return finalKey;
 }
 
 function getElevenLabsApiKey(): string {
-  return process.env.ELEVENLABS_API_KEY || '';
+  const key = process.env.ELEVENLABS_API_KEY || '';
+  if (!key) throw new Error('ElevenLabs API key is not configured.');
+  return key;
 }
 
 // ==========================================
@@ -75,25 +79,7 @@ export async function callNvidiaChat(
   const apiKey = getNvidiaApiKey(task);
 
   if (!apiKey) {
-    console.warn('NVIDIA/AI API key not found in env. Using simulated agentic response.');
-    const lastUserMsg = messages[messages.length - 1]?.content || '';
-    if (model.includes('8b')) {
-      return JSON.stringify({
-        symptoms: ['elevated blood pressure', 'headache', 'dizziness'],
-        duration: '2 days',
-        severity_mentioned: 'moderate',
-        context: 'Patient reported feeling unwell with elevated vitals',
-      });
-    }
-    if (model.includes('70b') || model.includes('120b')) {
-      return JSON.stringify({
-        priority: 'MEDIUM',
-        suspected_risk: 'Hypertensive Cardiometabolic Spike',
-        triage_rationale: 'Reported symptoms alongside vitals history indicating Stage 2 Hypertension trend.',
-        recommended_level: 'Urgent Primary Care Visit',
-      });
-    }
-    return 'Hello! I have reviewed your symptoms and updated your care plan. Please take your prescribed blood pressure medication, drink plenty of water, and rest while we notify your care team.';
+    throw new Error('NVIDIA/AI API key not found in env.');
   }
 
   const requestBody: any = {
@@ -128,21 +114,8 @@ export async function callNvidiaChat(
     });
 
     if (!response.ok) {
-      console.warn(`NVIDIA NIM API Returned ${response.status}. Using agentic fallback.`);
-      if (model.includes('8b')) {
-        return JSON.stringify({
-          symptoms: ['elevated blood pressure', 'headache', 'dizziness'],
-          duration: '2 days',
-          severity_mentioned: 'moderate',
-          context: 'Patient reported feeling unwell',
-        });
-      }
-      return JSON.stringify({
-        priority: 'MEDIUM',
-        suspected_risk: 'Hypertensive Cardiometabolic Spike',
-        triage_rationale: 'Reported symptoms evaluated alongside vitals history.',
-        recommended_level: 'Urgent Primary Care Visit',
-      });
+      const errText = await response.text();
+      throw new Error(`NVIDIA NIM API Returned ${response.status}: ${errText}`);
     }
 
     const data: NvidiaChatResponse = await response.json();
@@ -153,21 +126,7 @@ export async function callNvidiaChat(
 
     return data.choices[0].message.content;
   } catch (err) {
-    console.warn('NVIDIA NIM Fetch failed. Using agentic fallback:', err);
-    if (model.includes('8b')) {
-      return JSON.stringify({
-        symptoms: ['elevated blood pressure', 'headache', 'dizziness'],
-        duration: '2 days',
-        severity_mentioned: 'moderate',
-        context: 'Patient reported feeling unwell',
-      });
-    }
-    return JSON.stringify({
-      priority: 'MEDIUM',
-      suspected_risk: 'Hypertensive Cardiometabolic Spike',
-      triage_rationale: 'Reported symptoms evaluated alongside vitals history.',
-      recommended_level: 'Urgent Primary Care Visit',
-    });
+    throw err;
   }
 }
 
@@ -191,20 +150,7 @@ export async function callNvidiaChatJSON<T>(
   try {
     return JSON.parse(cleaned) as T;
   } catch (err) {
-    if (model.includes('8b')) {
-      return {
-        symptoms: ['elevated blood pressure', 'headache', 'dizziness'],
-        duration: '2 days',
-        severity_mentioned: 'moderate',
-        context: 'Patient reported feeling unwell',
-      } as unknown as T;
-    }
-    return {
-      priority: 'MEDIUM',
-      suspected_risk: 'Hypertensive Cardiometabolic Spike',
-      triage_rationale: 'Reported symptoms evaluated alongside vitals history.',
-      recommended_level: 'Urgent Primary Care Visit',
-    } as unknown as T;
+    throw new Error(`Failed to parse NVIDIA NIM response as JSON: ${err}. Content: ${cleaned}`);
   }
 }
 
@@ -220,7 +166,7 @@ export async function callElevenLabsSTT(audioBase64: string): Promise<string> {
   const apiKey = getElevenLabsApiKey();
 
   if (!apiKey) {
-    return 'Patient reports headache and mild dizziness since yesterday morning.';
+    throw new Error('ElevenLabs API key is not configured.');
   }
 
   try {
@@ -240,13 +186,13 @@ export async function callElevenLabsSTT(audioBase64: string): Promise<string> {
     });
 
     if (!response.ok) {
-      return 'Patient reports headache and mild dizziness since yesterday morning.';
+      throw new Error(`ElevenLabs STT failed with status ${response.status}`);
     }
 
     const data = await response.json() as any;
-    return data.text || 'Patient reports headache and mild dizziness since yesterday morning.';
+    return data.text || '';
   } catch (err) {
-    return 'Patient reports headache and mild dizziness since yesterday morning.';
+    throw err;
   }
 }
 
@@ -261,7 +207,7 @@ export async function callElevenLabsTTS(text: string): Promise<string> {
   const apiKey = getElevenLabsApiKey();
 
   if (!apiKey) {
-    return '';
+    throw new Error('ElevenLabs API key is not configured.');
   }
 
   try {
@@ -282,13 +228,13 @@ export async function callElevenLabsTTS(text: string): Promise<string> {
     });
 
     if (!response.ok) {
-      return '';
+      throw new Error(`ElevenLabs TTS failed with status ${response.status}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
     return Buffer.from(arrayBuffer).toString('base64');
   } catch (err) {
-    return '';
+    throw err;
   }
 }
 

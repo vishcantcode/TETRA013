@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
@@ -69,7 +70,7 @@ CRITICAL RULES:
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
       });
 
@@ -154,7 +155,7 @@ CRITICAL RULES:
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: query,
         config: {
           systemInstruction,
@@ -223,7 +224,7 @@ Return a valid JSON object matching this schema:
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: query,
         config: {
           systemInstruction,
@@ -311,7 +312,7 @@ CRITICAL RULES:
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: `Generate personalized daily health plan for ${patient?.name || 'this patient'}.`,
         config: {
           systemInstruction,
@@ -490,7 +491,7 @@ OUTPUT ONLY VALID JSON.
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: `Generate Indian meal plan for region ${region}, diet ${dietType}, conditions ${conditions?.join(', ')}.`,
         config: {
           systemInstruction,
@@ -649,7 +650,7 @@ OUTPUT ONLY VALID JSON.
       }
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: contentsList,
         config: {
           systemInstruction,

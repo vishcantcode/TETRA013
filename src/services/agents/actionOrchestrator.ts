@@ -41,33 +41,61 @@ export async function runActionOrchestrator(
 
   try {
     if (triage.priority === 'HIGH') {
-      // 1. Find nearest hospital (mocking lat/lng for demo)
-      const hospital = await findNearestHospital(23.0225, 72.5714, triage.suspected_risk);
-      result.hospital = hospital;
-      result.actions.push({
-        action: 'Geolocation: Nearest Hospital Identified',
-        status: 'success',
-        details: `${hospital.name} (ETA: ${hospital.eta})`,
-      });
+      // 1. Find nearest hospital
+      let hospital: HospitalInfo | undefined;
+      let dynamicAmbulanceContact = process.env.EMERGENCY_CONTACT_AMBULANCE || '+1234567890';
+      try {
+        hospital = await findNearestHospital(23.0225, 72.5714, triage.suspected_risk);
+        result.hospital = hospital;
+        dynamicAmbulanceContact = hospital.phone;
+        result.actions.push({
+          action: 'Geolocation: Nearest Hospital Identified',
+          status: 'success',
+          details: `${hospital.name} (ETA: ${hospital.eta})`,
+        });
+      } catch (err: any) {
+        result.actions.push({
+          action: 'Geolocation: Nearest Hospital Identified',
+          status: 'failed',
+          details: err.message,
+        });
+      }
 
-      // 2. Dispatch ambulance via Voice to the dynamically identified hospital
-      const dynamicAmbulanceContact = hospital.phone;
-      const emergencyVoiceScript = `Emergency alert. Dispatch ambulance immediately to coordinates X Y for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}. ETA to ${hospital.name} is ${hospital.eta}.`;
-      await initiateVoiceCall(dynamicAmbulanceContact, emergencyVoiceScript);
-      result.actions.push({
-        action: 'Twilio Voice: Ambulance Dispatched',
-        status: 'success',
-        details: `Call initiated dynamically to ${hospital.name} at ${dynamicAmbulanceContact}`,
-      });
+      // 2. Dispatch ambulance via Voice
+      try {
+        const emergencyVoiceScript = hospital 
+          ? `Emergency alert. Dispatch ambulance immediately to coordinates X Y for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}. ETA to ${hospital.name} is ${hospital.eta}.`
+          : `Emergency alert. Dispatch ambulance immediately for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}.`;
+        await initiateVoiceCall(dynamicAmbulanceContact, emergencyVoiceScript);
+        result.actions.push({
+          action: 'Twilio Voice: Ambulance Dispatched',
+          status: 'success',
+          details: `Call initiated dynamically to ${hospital ? hospital.name : 'Ambulance'} at ${dynamicAmbulanceContact}`,
+        });
+      } catch (err: any) {
+        result.actions.push({
+          action: 'Twilio Voice: Ambulance Dispatched',
+          status: 'failed',
+          details: err.message,
+        });
+      }
 
       // 3. SMS to Community Health Worker
-      const smsMessage = `URGENT: ${patient.name} (${patient.age}) experiencing symptoms of ${triage.suspected_risk}. Ambulance dispatched. Please proceed to patient location.`;
-      await sendSMS(chwContact, smsMessage);
-      result.actions.push({
-        action: 'Twilio SMS: CHW Notified',
-        status: 'success',
-        details: `Message sent to ${chwContact}`,
-      });
+      try {
+        const smsMessage = `URGENT: ${patient.name} (${patient.age}) experiencing symptoms of ${triage.suspected_risk}. Ambulance dispatched. Please proceed to patient location.`;
+        await sendSMS(chwContact, smsMessage);
+        result.actions.push({
+          action: 'Twilio SMS: CHW Notified',
+          status: 'success',
+          details: `Message sent to ${chwContact}`,
+        });
+      } catch (err: any) {
+        result.actions.push({
+          action: 'Twilio SMS: CHW Notified',
+          status: 'failed',
+          details: err.message,
+        });
+      }
 
     } else if (triage.priority === 'MEDIUM') {
       // 1. Auto-schedule PCP appointment (mock calendar logic)
@@ -88,13 +116,22 @@ export async function runActionOrchestrator(
       });
 
       // 2. SMS Nudge to patient/caregiver
-      const patientNudge = `HealthSense Alert: We noticed some concerning symptoms (${triage.suspected_risk}). We've proactively booked a checkup for you with ${result.appointment.doctor} tomorrow at 10:00 AM.`;
-      await sendSMS(chwContact, patientNudge); // Using CHW number for demo purposes
-      result.actions.push({
-        action: 'Twilio SMS: Patient Nudge Sent',
-        status: 'success',
-      });
-      result.nudge = patientNudge;
+      try {
+        const patientNudge = `HealthSense Alert: We noticed some concerning symptoms (${triage.suspected_risk}). We've proactively booked a checkup for you with ${result.appointment.doctor} tomorrow at 10:00 AM.`;
+        await sendSMS(chwContact, patientNudge); // Using CHW number for demo purposes
+        result.actions.push({
+          action: 'Twilio SMS: Patient Nudge Sent',
+          status: 'success',
+        });
+        result.nudge = patientNudge;
+      } catch (err: any) {
+        result.actions.push({
+          action: 'Twilio SMS: Patient Nudge Sent',
+          status: 'failed',
+          details: err.message,
+        });
+        result.nudge = `HealthSense Alert: We noticed some concerning symptoms (${triage.suspected_risk}). Please consult your primary care physician.`;
+      }
 
     } else {
       // NORMAL Priority
@@ -118,7 +155,7 @@ export async function runActionOrchestrator(
     return result;
   } catch (error) {
     console.error('Orchestrator Error:', error);
-    // Explicitly throw so the pipeline fails loudly without fallback
-    throw new Error('Action Orchestrator failed to execute real-world actions. Clinical Engine Unavailable.');
+    // Don't throw, just return what we have so the UI can show the errors gracefully.
+    return result;
   }
 }

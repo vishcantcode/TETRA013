@@ -76,7 +76,7 @@ export const SmartIntakeChat: React.FC = () => {
   };
 
   const handleSmartwatchAnalysis = () => {
-    const promptText = "Can you analyze my smartwatch data?";
+    const promptText = "Can you analyze my smartwatch data? My live telemetry shows Heart Rate 118 BPM, Temp 101.4 F, Blood Pressure 158/98 mmHg, SpO2 95%.";
     processUserPrompt(promptText);
   };
 
@@ -93,65 +93,6 @@ export const SmartIntakeChat: React.FC = () => {
     setResult(null);
 
     const textLower = userText.toLowerCase();
-
-    // 1. SMARTWATCH TELEMETRY ANALYSIS REQUEST
-    if (textLower.includes('smartwatch') || textLower.includes('watch') || textLower.includes('heartbeat') || textLower.includes('temp')) {
-      setPipelineState({ intake: 'processing', triage: 'processing', orchestrator: 'processing', empathy: 'processing' });
-      
-      setTimeout(() => {
-        const sampleVitals = {
-          hr: 118,
-          temp: 101.4,
-          bpSys: 158,
-          bpDia: 98,
-          spo2: 95,
-        };
-
-        const isSevere = sampleVitals.bpSys >= 150 || sampleVitals.temp >= 101 || sampleVitals.hr >= 110;
-        setAutoDispatchTriggered(isSevere);
-
-        const explanation = `I analyzed your live smartwatch telemetry: Body Temperature is ${sampleVitals.temp}°F (elevated fever), Heart Rate is ${sampleVitals.hr} BPM (tachycardia), Blood Pressure is ${sampleVitals.bpSys}/${sampleVitals.bpDia} mmHg (Hypertensive Spike), and SpO2 is ${sampleVitals.spo2}%. You may be experiencing an Acute Hypertensive / Infectious Fever Spike. ${
-          isSevere
-            ? 'Because your vitals indicate severe stress, I have AUTOMATICALLY alerted your Primary Doctor (Dr. Arthur Pendelton), dispatched hospital triage alerts, and sent an emergency SMS to your Family Member.'
-            : 'Please drink plenty of water and rest.'
-        }`;
-
-        const mockResult: AgentPipelineResult = {
-          intake: {
-            symptoms: ['elevated body temperature', 'tachycardia', 'stage 2 hypertensive BP spike'],
-            duration: 'live smartwatch stream',
-            severity_mentioned: isSevere ? 'HIGH' : 'MEDIUM',
-            context: 'Smartwatch sensor telemetry sync',
-          },
-          triage: {
-            priority: isSevere ? 'HIGH' : 'MEDIUM',
-            suspected_risk: 'Hypertensive & Thermal Crisis Spike',
-            rationale: `Smartwatch telemetry indicates Body Temp ${sampleVitals.temp}°F and BP ${sampleVitals.bpSys}/${sampleVitals.bpDia} mmHg.`,
-            red_flags: ['High Fever Spike (>101°F)', 'Systolic BP >= 150 mmHg', 'Tachycardia > 110 BPM'],
-            suggested_action: isSevere ? 'DISPATCH_AMBULANCE' : 'SCHEDULE_PCP',
-          },
-          orchestration: {
-            priority: isSevere ? 'HIGH' : 'MEDIUM',
-            actions: [
-              { action: '🚨 Automated Doctor & Hospital Dispatch', details: 'Alert sent to Dr. Arthur Pendelton & City Hospital Network via Twilio API', status: 'success' },
-              { action: '📞 Emergency Family Contact Notification', details: 'Automated SMS sent to Family Member Emergency Contact', status: 'success' },
-              { action: '🏥 Urgent Primary Care Appointment Scheduled', details: 'Slot reserved for immediate clinical consultation', status: 'success' },
-            ],
-            nudge: `ALERT: Smartwatch telemetry detected Temp ${sampleVitals.temp}°F & BP ${sampleVitals.bpSys}/${sampleVitals.bpDia} mmHg. Emergency protocol active.`,
-          },
-          empathy: {
-            spokenText: explanation,
-            audioBase64: '',
-          },
-        };
-
-        setResult(mockResult);
-        setPipelineState({ intake: 'complete', triage: 'complete', orchestrator: 'complete', empathy: 'complete' });
-        setMessages(prev => [...prev, { role: 'assistant', text: explanation }]);
-      }, 1200);
-
-      return;
-    }
 
     // 2. GREETINGS AND CASUAL LIGHT TALK
     if (textLower === 'hi' || textLower === 'hello' || textLower.includes('how are you') || textLower.includes('good morning')) {

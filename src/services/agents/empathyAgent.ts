@@ -57,10 +57,6 @@ function buildEmpathyInput(triage: TriageResult, actionDescription?: string): st
  * @param actionDescription - Optional override for the action description
  */
 export async function runEmpathyAgent(triage: TriageResult, actionDescription?: string): Promise<string> {
-  if (triage.priority === 'NORMAL' || triage.suspected_risk.includes('Routine')) {
-    return 'Hello there! I am your AI Health Assistant. I have logged your check-in and am right here to help you monitor your health and answer any questions. How are you feeling today?';
-  }
-
   const userMessage = buildEmpathyInput(triage, actionDescription);
 
   const messages: NvidiaChatMessage[] = [
