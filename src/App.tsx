@@ -41,6 +41,7 @@ import { EarlyWarningCommandCenter } from './components/doctor/EarlyWarningComma
 import { XAIExplanationCard } from './components/doctor/XAIExplanationCard';
 import { PatientRegistrationModal } from './components/modals/PatientRegistrationModal';
 import { UnifiedInputConsole } from './components/doctor/UnifiedInputConsole';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { FuturisticMotionBackground } from './components/common/FuturisticMotionBackground';
 
 export default function App() {
@@ -203,6 +204,7 @@ export default function App() {
 
         {/* Viewport Content Area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <ErrorBoundary>
           {mode === 'landing' && (
             <LandingPage
               setMode={setMode}
@@ -526,6 +528,7 @@ export default function App() {
               onUpdatePatient={handleUpdateActivePatient}
             />
           )}
+          </ErrorBoundary>
         </main>
       </div>
 

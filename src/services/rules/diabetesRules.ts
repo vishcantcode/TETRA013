@@ -88,4 +88,21 @@ export const DIABETES_RULES: GuidelineRule[] = [
     priority: 'High',
     supportingGuideline: 'AACE / ACE Clinical Practice Guidelines for T2D',
   },
+  {
+    ruleId: 'DM-006',
+    ruleName: 'Asian-Indian BMI Risk Threshold (ICMR Criteria)',
+    disease: 'Diabetes',
+    conditionsDescription:
+      'BMI ≥ 23 kg/m² (overweight) or ≥ 25 kg/m² (obese) — lower cutoffs than WHO general-population thresholds, per ICMR guidance for Asian-Indian body composition and visceral adiposity risk.',
+    evaluateCondition: (patient: Patient, customVitals?: Partial<Vitals>) => {
+      const bmi = customVitals?.bmi ?? patient.vitals.bmi;
+      return bmi >= 23;
+    },
+    clinicalReason:
+      'Asian-Indian populations develop insulin resistance and Type 2 Diabetes at lower BMI than Western populations due to higher visceral-to-subcutaneous fat ratio at equivalent BMI. Applying the standard WHO cutoff (BMI ≥ 25) underestimates risk in this population.',
+    recommendation:
+      'For BMI 23–24.9 kg/m², initiate lifestyle counseling and annual HbA1c screening. For BMI ≥ 25 kg/m², treat as obese per Asian-Indian criteria and escalate screening frequency to every 6 months.',
+    priority: 'Medium',
+    supportingGuideline: 'ICMR Guidelines for Management of Type 2 Diabetes • Asian-Indian BMI Criteria (WHO Asia-Pacific adaptation)',
+  },
 ];

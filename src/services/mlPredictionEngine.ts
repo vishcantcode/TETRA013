@@ -10,12 +10,17 @@ import { ConfidenceAssessmentService } from '../services/ConfidenceAssessmentSer
 import { DiseasePrediction } from '../types/cdss';
 
 /**
- * Standardized Machine Learning Prediction Engine Service.
- * Provides an asynchronous abstraction layer that simulates a real REST API microservice
- * (e.g., Python FastAPI endpoint 'POST /api/v1/predict').
- * 
- * The frontend UI calls predictDiseaseRisk(patientPayload) without knowing how
- * the risk model or microservice is implemented under the hood.
+ * Standardized Risk Prediction Engine Service.
+ * Computes disease risk scores locally using clinical-guideline-derived
+ * weighted formulas (see clinicalRuleEngine.ts / src/services/rules/ for
+ * the underlying thresholds). This is a rule-based scorer, not a trained
+ * ML model and not a call to an external microservice — the async
+ * interface below exists to keep the call site consistent with future
+ * real backend integration, not to imply one already exists.
+ *
+ * The frontend UI calls predictDiseaseRisk(patientPayload) without needing
+ * to know the scoring implementation, so this can be swapped for a real
+ * trained model later without changing call sites.
  */
 export class MlPredictionEngine {
   private static instance: MlPredictionEngine;
@@ -87,7 +92,7 @@ export class MlPredictionEngine {
   ): Promise<MlPredictionResponse> {
     const startTime = performance.now();
     const endpointCalled = options?.customEndpointUrl || '/api/ml/v1/predict';
-    const modelVersion = 'v3.2.0-xgboost-ensemble';
+    const modelVersion = 'clinical-rule-weighted-v1';
     const predictionTimestamp = new Date().toISOString();
 
     // 1. Simulate Error Handling if requested or if network fails

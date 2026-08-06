@@ -70,4 +70,21 @@ export const HYPERTENSION_RULES: GuidelineRule[] = [
     priority: 'Urgent',
     supportingGuideline: 'AHA / ACC Hypertensive Crisis Management Protocol 2025',
   },
+  {
+    ruleId: 'HTN-006',
+    ruleName: 'Elevated BP with High-Sodium Dietary Risk (WHO Sodium Guideline)',
+    disease: 'Hypertension',
+    conditionsDescription: 'Systolic BP 130-139 mmHg or Diastolic BP 80-89 mmHg (Stage 1 range) — dietary sodium counseling indicated regardless of pharmacologic therapy status.',
+    evaluateCondition: (patient: Patient, customVitals?: Partial<Vitals>) => {
+      const sbp = customVitals?.bpSystolic ?? patient.vitals.bpSystolic;
+      const dbp = customVitals?.bpDiastolic ?? patient.vitals.bpDiastolic;
+      return (sbp >= 130 && sbp < 140) || (dbp >= 80 && dbp < 90);
+    },
+    clinicalReason:
+      'WHO recommends sodium intake below 5g/day (approx. 1 teaspoon of salt) to reduce blood pressure and cardiovascular risk; average Indian dietary sodium intake is well above this threshold, driven largely by pickles, papad, and processed/packaged foods.',
+    recommendation:
+      'Provide dietary sodium counseling with India-specific guidance (reduce added salt, pickles, papad, and processed snacks). Recheck BP in 4-6 weeks before considering pharmacologic escalation.',
+    priority: 'Medium',
+    supportingGuideline: 'WHO Guideline: Sodium Intake for Adults and Children (2012, reaffirmed) • WHO Global NCD Action Plan',
+  },
 ];

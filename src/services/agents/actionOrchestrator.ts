@@ -22,6 +22,7 @@ export interface OrchestrationResult {
   hospital?: HospitalInfo;
   appointment?: { doctor: string; date: string; time: string };
   nudge?: string;
+  isSimulated?: boolean;
 }
 
 /**
@@ -36,53 +37,41 @@ export async function runActionOrchestrator(
     actions: [],
   };
 
-  const chwContact = process.env.EMERGENCY_CONTACT_CHW || '+1234567890';
-  // Note: Ambulance contact is now fetched dynamically via the Geolocation API in HIGH priority cases
+  const chwContact = process.env.EMERGENCY_CONTACT_CHW || process.env.PATIENT_PHONE_NUMBER || '+916359385870';
 
   try {
     if (triage.priority === 'HIGH') {
-      // 1. Find nearest hospital
-      let hospital: HospitalInfo | undefined;
-      let dynamicAmbulanceContact = process.env.EMERGENCY_CONTACT_AMBULANCE || '+1234567890';
-      try {
-        hospital = await findNearestHospital(23.0225, 72.5714, triage.suspected_risk);
-        result.hospital = hospital;
-        dynamicAmbulanceContact = hospital.phone;
-        result.actions.push({
-          action: 'Geolocation: Nearest Hospital Identified',
-          status: 'success',
-          details: `${hospital.name} (ETA: ${hospital.eta})`,
-        });
-      } catch (err: any) {
-        result.actions.push({
-          action: 'Geolocation: Nearest Hospital Identified',
-          status: 'failed',
-          details: err.message,
-        });
-      }
+      // 1. Find nearest hospital (mocking lat/lng for demo)
+      const hospital = await findNearestHospital(23.0225, 72.5714, triage.suspected_risk);
+      result.hospital = hospital;
+      result.actions.push({
+        action: 'Geolocation: Nearest Hospital Identified',
+        status: 'success',
+        details: `${hospital.name} (ETA: ${hospital.eta})`,
+      });
 
-      // 2. Dispatch ambulance via Voice
+      // 2. Dispatch ambulance via Voice to the dynamically identified hospital
+      const dynamicAmbulanceContact = hospital.phone;
+      const emergencyVoiceScript = `Emergency alert. Dispatch ambulance immediately to coordinates X Y for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}. ETA to ${hospital.name} is ${hospital.eta}.`;
+      
       try {
-        const emergencyVoiceScript = hospital 
-          ? `Emergency alert. Dispatch ambulance immediately to coordinates X Y for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}. ETA to ${hospital.name} is ${hospital.eta}.`
-          : `Emergency alert. Dispatch ambulance immediately for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}.`;
         await initiateVoiceCall(dynamicAmbulanceContact, emergencyVoiceScript);
         result.actions.push({
           action: 'Twilio Voice: Ambulance Dispatched',
           status: 'success',
-          details: `Call initiated dynamically to ${hospital ? hospital.name : 'Ambulance'} at ${dynamicAmbulanceContact}`,
+          details: `Call initiated dynamically to ${hospital.name} at ${dynamicAmbulanceContact}`,
         });
       } catch (err: any) {
         result.actions.push({
-          action: 'Twilio Voice: Ambulance Dispatched',
+          action: 'Twilio Voice: Ambulance Dispatch Failed',
           status: 'failed',
           details: err.message,
         });
       }
 
       // 3. SMS to Community Health Worker
+      const smsMessage = `URGENT: ${patient.name} (${patient.age}) experiencing symptoms of ${triage.suspected_risk}. Ambulance dispatched. Please proceed to patient location.`;
       try {
-        const smsMessage = `URGENT: ${patient.name} (${patient.age}) experiencing symptoms of ${triage.suspected_risk}. Ambulance dispatched. Please proceed to patient location.`;
         await sendSMS(chwContact, smsMessage);
         result.actions.push({
           action: 'Twilio SMS: CHW Notified',
@@ -91,15 +80,14 @@ export async function runActionOrchestrator(
         });
       } catch (err: any) {
         result.actions.push({
-          action: 'Twilio SMS: CHW Notified',
+          action: 'Twilio SMS: CHW Notification Failed',
           status: 'failed',
           details: err.message,
         });
       }
 
     } else if (triage.priority === 'MEDIUM') {
-      // 1. Auto-schedule PCP appointment (mock calendar logic)
-      // In real life, this would call an EHR API (e.g., Epic/Cerner)
+      result.isSimulated = true;
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dateStr = tomorrow.toISOString().split('T')[0];
@@ -115,10 +103,10 @@ export async function runActionOrchestrator(
         details: `${result.appointment.doctor} on ${dateStr} at 10:00 AM`,
       });
 
-      // 2. SMS Nudge to patient/caregiver
+      // SMS Nudge to patient/caregiver with safe try/catch
+      const patientNudge = `HealthSense Alert: We noticed some concerning symptoms (${triage.suspected_risk}). We've proactively booked a checkup for you with ${result.appointment.doctor} tomorrow at 10:00 AM.`;
       try {
-        const patientNudge = `HealthSense Alert: We noticed some concerning symptoms (${triage.suspected_risk}). We've proactively booked a checkup for you with ${result.appointment.doctor} tomorrow at 10:00 AM.`;
-        await sendSMS(chwContact, patientNudge); // Using CHW number for demo purposes
+        await sendSMS(chwContact, patientNudge);
         result.actions.push({
           action: 'Twilio SMS: Patient Nudge Sent',
           status: 'success',
@@ -135,16 +123,13 @@ export async function runActionOrchestrator(
 
     } else {
       // NORMAL Priority
-      // 1. Log to Digital Twin (mock db update)
+      result.isSimulated = true;
       result.actions.push({
         action: 'Database: Digital Twin Updated',
         status: 'success',
         details: 'Longitudinal health record updated with new baseline.',
       });
 
-      // 2. Proactive Nudge
-      // In a full implementation, we'd use Llama 8B here to generate a dynamic nudge.
-      // For speed, using a static thoughtful nudge based on the rationale.
       result.nudge = `Great job logging your health today! Keep up the good work. ${triage.rationale}`;
       result.actions.push({
         action: 'UI: Proactive Lifestyle Nudge Generated',
@@ -155,7 +140,7 @@ export async function runActionOrchestrator(
     return result;
   } catch (error) {
     console.error('Orchestrator Error:', error);
-    // Don't throw, just return what we have so the UI can show the errors gracefully.
+    // Don't throw, just return result so UI can display gracefully
     return result;
   }
 }

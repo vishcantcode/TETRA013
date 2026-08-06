@@ -1,5 +1,5 @@
 import { Patient } from '../../types';
-import { CdssPipelineResult } from '../../types/cdss';
+import { CdssPipelineResult, ConfidenceBreakdown } from '../../types/cdss';
 import { PatientDataValidationService } from './validationService';
 import { MlRiskPredictionService } from './mlRiskPredictionService';
 import { ClinicalRuleEngine } from './clinicalRuleEngine';
@@ -7,7 +7,7 @@ import { EarlyWarningEngine } from './earlyWarningEngine';
 import { ReferralEngine } from './referralEngine';
 import { GeminiClinicalReasoningService } from './geminiReasoningService';
 import { PatientEducationService } from './patientEducationService';
-import { ConfidenceEngine } from './confidenceEngine';
+import { ConfidenceAssessmentService } from '../ConfidenceAssessmentService';
 import { ReportGeneratorService } from './reportGeneratorService';
 
 export class CdssPipelineOrchestrator {
@@ -64,8 +64,25 @@ export class CdssPipelineOrchestrator {
       customVitals
     );
 
-    // Stage 9: AI Confidence Breakdown
-    const confidence = ConfidenceEngine.calculateConfidence(patient, validation, customVitals);
+    // Stage 9: AI Confidence Breakdown (patient-specific, dynamically computed)
+    const dynamicConfidence = ConfidenceAssessmentService.evaluatePatientData(patient);
+    const confidence: ConfidenceBreakdown = {
+      overallConfidenceScore: dynamicConfidence.confidencePercentage,
+      confidenceLevel: dynamicConfidence.confidenceLevel,
+      confidenceDrivers: dynamicConfidence.evidenceQuality,
+      missingInformation: dynamicConfidence.missingInputs,
+      suggestedAdditionalTestsToBoostConfidence: dynamicConfidence.missingInputs.map(
+        (item) => `Order ${item} to improve prediction confidence.`
+      ),
+      dataQualityRating:
+        dynamicConfidence.confidencePercentage >= 90
+          ? 'Excellent'
+          : dynamicConfidence.confidencePercentage >= 80
+          ? 'Good'
+          : dynamicConfidence.confidencePercentage >= 70
+          ? 'Moderate'
+          : 'Limited',
+    };
 
     // Create preliminary pipeline result to construct report
     const preliminaryResult: CdssPipelineResult = {

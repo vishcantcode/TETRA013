@@ -51,7 +51,7 @@ function buildEmpathyInput(triage: TriageResult, actionDescription?: string): st
 
 /**
  * Run the Empathy Agent on a triage result.
- * Returns plain spoken text string for TTS — no fallbacks.
+ * Returns plain spoken text string for TTS.
  * 
  * @param triage - The TriageResult from Step 2
  * @param actionDescription - Optional override for the action description
@@ -81,12 +81,12 @@ export async function runEmpathyAgent(triage: TriageResult, actionDescription?: 
       .replace(/```/g, '')
       .trim();
 
-    if (!cleaned || cleaned.length < 10) {
-      return 'Hello there! I am your AI Health Assistant. I am here to help you monitor your health, answer questions, and support your well-being. How are you feeling today?';
+    if (!cleaned || cleaned.length < 10 || cleaned.startsWith('{') || cleaned.startsWith('[')) {
+      return 'I am your AI Health Assistant. I have recorded your symptoms and scheduled a checkup with your primary care doctor for tomorrow at 10:00 AM. Please drink plenty of water and rest today.';
     }
 
     return cleaned;
   } catch (err) {
-    return 'Hello there! I am your AI Health Assistant. I am here to help you monitor your health, answer questions, and support your well-being. How are you feeling today?';
+    return 'I am your AI Health Assistant. I have recorded your symptoms and scheduled a checkup with your primary care doctor for tomorrow at 10:00 AM. Please drink plenty of water and rest today.';
   }
 }

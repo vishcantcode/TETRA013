@@ -17,8 +17,9 @@ export class MlRiskPredictionService implements PredictorInterface {
   }
 
   /**
-   * Async ML prediction calling the modular ML Prediction Engine layer.
-   * Simulates calling an external REST API microservice POST /api/ml/predict
+   * Async prediction calling the modular prediction engine layer.
+   * Computes scores locally using clinical-guideline-derived weighted
+   * formulas — not a call to an external model-serving service.
    */
   public async predictRiskAsync(patient: Patient, customVitals?: any): Promise<DiseasePrediction[]> {
     const engine = MlPredictionEngine.getInstance();
@@ -28,12 +29,13 @@ export class MlRiskPredictionService implements PredictorInterface {
   }
 
   /**
-   * Stage 2 & Stage 3: Predicts 5 lifestyle disease risks and computes feature importance.
-   * Can be swapped out for a microservice REST endpoint or ONNX runtime model.
+   * Stage 2 & Stage 3: Predicts 5 lifestyle disease risks and computes feature importance
+   * using transparent, guideline-derived weighted formulas (auditable by design,
+   * in the same spirit as clinical calculators like ASCVD Risk Estimator or QRISK).
    */
   public predictRisk(patient: Patient): DiseasePrediction[] {
     const timestamp = new Date().toISOString();
-    const modelVersion = 'v3.2.0-xgboost-ensemble';
+    const modelVersion = 'clinical-rule-weighted-v1';
 
     const vitals = patient.vitals || {
       hba1c: 7.2,
