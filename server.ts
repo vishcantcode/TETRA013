@@ -6,7 +6,7 @@ import { GoogleGenAI } from '@google/genai';
 import { runIntakeAgent } from './src/services/agents/intakeAgent';
 import { runTriageAgent } from './src/services/agents/triageAgent';
 import { runActionOrchestrator } from './src/services/agents/actionOrchestrator';
-import { runEmpathyAgent } from './src/services/agents/empathyAgent';
+import { runEmpathyAgent, generateDynamicEmpathyResponse } from './src/services/agents/empathyAgent';
 import { callElevenLabsSTT, callElevenLabsTTS } from './src/services/agents/nvidiaClient';
 
 async function startServer() {
@@ -975,7 +975,7 @@ OUTPUT ONLY VALID JSON.
       const orchestration = await runActionOrchestrator(triage, profile);
 
       console.log('Running Empathy Agent...');
-      const spokenText = await runEmpathyAgent(triage);
+      const spokenText = await runEmpathyAgent(triage, intake, inputText);
       
       console.log('Running ElevenLabs TTS...');
       let audio = null;
@@ -997,6 +997,7 @@ OUTPUT ONLY VALID JSON.
     } catch (err: any) {
       console.error('Agent Pipeline Error:', err);
       const fallbackText = req.body?.text || 'Patient check-in';
+      const spokenText = generateDynamicEmpathyResponse(undefined, undefined, fallbackText);
       return res.json({
         intake: {
           symptoms: ['feeling unwell', 'symptom exacerbation'],
@@ -1020,7 +1021,7 @@ OUTPUT ONLY VALID JSON.
           nudge: 'HealthSense Alert: We noticed you are not feeling well. We have proactively booked a checkup for you tomorrow at 10:00 AM.',
         },
         empathy: {
-          spokenText: 'I am so sorry to hear that you are not feeling well. I have scheduled a checkup with your primary care doctor for tomorrow morning and recorded your symptoms in your health record. Please drink plenty of water and rest today.',
+          spokenText,
           audioBase64: null,
         }
       });
