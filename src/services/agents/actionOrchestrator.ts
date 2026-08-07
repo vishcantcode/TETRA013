@@ -38,6 +38,7 @@ export async function runActionOrchestrator(
   };
 
   const chwContact = process.env.EMERGENCY_CONTACT_CHW || process.env.PATIENT_PHONE_NUMBER || '+916359385870';
+  const ambulanceFallback = process.env.EMERGENCY_CONTACT_AMBULANCE || '+919726299017';
 
   try {
     if (triage.priority === 'HIGH') {
@@ -50,16 +51,20 @@ export async function runActionOrchestrator(
         details: `${hospital.name} (ETA: ${hospital.eta})`,
       });
 
-      // 2. Dispatch ambulance via Voice to the dynamically identified hospital
-      const dynamicAmbulanceContact = hospital.phone;
-      const emergencyVoiceScript = `Emergency alert. Dispatch ambulance immediately to coordinates X Y for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}. ETA to ${hospital.name} is ${hospital.eta}.`;
-      
+      // 2. Dispatch ambulance via Voice
+      // NOTE: Always use EMERGENCY_CONTACT_AMBULANCE during testing to avoid
+      // accidentally calling a real hospital emergency line.
+      // In production, swap ambulanceFallback → hospital.phone when available.
+      const dynamicAmbulanceContact = ambulanceFallback;
+      const callTarget = `Emergency Ambulance Contact (test) — nearest: ${hospital.name}`;
+      const emergencyVoiceScript = `Emergency alert. Dispatch ambulance immediately for ${patient.name}, age ${patient.age}. Suspected ${triage.suspected_risk}. Nearest hospital is ${hospital.name}, ETA ${hospital.eta}.`;
+
       try {
         await initiateVoiceCall(dynamicAmbulanceContact, emergencyVoiceScript);
         result.actions.push({
           action: 'Twilio Voice: Ambulance Dispatched',
           status: 'success',
-          details: `Call initiated dynamically to ${hospital.name} at ${dynamicAmbulanceContact}`,
+          details: `Call initiated to ${callTarget} at ${dynamicAmbulanceContact}`,
         });
       } catch (err: any) {
         result.actions.push({
@@ -68,6 +73,7 @@ export async function runActionOrchestrator(
           details: err.message,
         });
       }
+
 
       // 3. SMS to Community Health Worker
       const smsMessage = `URGENT: ${patient.name} (${patient.age}) experiencing symptoms of ${triage.suspected_risk}. Ambulance dispatched. Please proceed to patient location.`;

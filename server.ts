@@ -1,3 +1,4 @@
+import 'dotenv/config'; // ← MUST be first: loads .env into process.env before anything else
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
@@ -17,6 +18,16 @@ async function startServer() {
   // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
+  });
+
+  // TwiML endpoint — serves emergency voice script for Twilio voice calls
+  // Twilio calls this URL when a call connects; must be publicly accessible via ngrok
+  app.get('/twiml', (req, res) => {
+    res.set('Content-Type', 'text/xml');
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say>Emergency alert. An ambulance has been dispatched to your location. Please respond immediately to the patient.</Say>
+</Response>`);
   });
 
   // Stage 7: Gemini Clinical Reasoning API Proxy (Server-Side Secret API Key Protection)
